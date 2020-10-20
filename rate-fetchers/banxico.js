@@ -17,7 +17,6 @@ async function fetch(dateStr, logger) {
   })
 
   const banxicoRates = parser.parse(body)
-  console.log(body, banxicoRates)
   return banxicoRates.series.serie.Obs.dato
 }
 
