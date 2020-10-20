@@ -9,7 +9,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bunyan": "^1.8.14",
+    "cheerio": "^1.0.0-rc.3",
+    "ejs": "^3.1.5",
     "express": "^4.17.1",
-    "jsonwebtoken": "^8.5.1"
+    "glob": "^7.1.6",
+    "got": "^11.7.0",
+    "jsonwebtoken": "^8.5.1",
+    "moment": "^2.29.1",
+    "moment-timezone": "^0.5.31"
   }
 }
