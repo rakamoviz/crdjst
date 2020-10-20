@@ -3,7 +3,7 @@
 Copy the .env.example to .env, and change the values inside the file to suit your need.
 
 Build and run using docker:
-  - docker build -t crdjst
+  - docker build -t crdjst .
   - docker run --name crdjst -it --env-file .env -p 3000:3000 crdjst
   - docker stop crdjst; docker rm crdjst
  
