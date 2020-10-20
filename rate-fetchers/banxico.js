@@ -5,8 +5,6 @@ const moment = require('moment')
 
 async function fetchFromSite(dateStr, logger) {
   const formatedDate = moment(dateStr).format('YYYY-MM-DD')
-
-  console.log(`${process.env.BANXICO_URL}/SieAPIRest/service/v1/series/SF43718/datos/${formatedDate}/${formatedDate}?mediaType=xml`)
   const url = `${process.env.BANXICO_URL}/SieAPIRest/service/v1/series/SF43718/datos/${formatedDate}/${formatedDate}?mediaType=xml`
   const { body } = await got(url, { 
     method: 'GET', 
@@ -20,7 +18,43 @@ async function fetchFromSite(dateStr, logger) {
 }
 
 module.exports = async (dateStr, logger) => {
-  const xmlStr = await fetchFromSite(dateStr, logger)
-  const banxicoRates = parser.parse(xmlStr)
-  return banxicoRates.series.serie.Obs.dato
+  try {
+    const xmlStr = await fetchFromSite(dateStr, logger)
+
+    try {
+      const banxicoRates = parser.parse(xmlStr)
+      const rate = banxicoRates?.series?.serie?.Obs?.dato
+    
+      if (!rate) {
+        logger.warn({
+          type: 'rate-fetcher', 'rate-fetcher': 'banxico', 'error-class': 'parse',
+          dateStr: dateStr,
+          message: 'no data',
+          xmlStr: xmlStr
+        })
+    
+        return 'n/a'
+      }
+    
+      return rate
+    } catch (err) {
+      logger.warn({
+        type: 'rate-fetcher', 'rate-fetcher': 'banxico', 'error-class': 'parse',
+        dateStr: dateStr,
+        message: err.message,
+        xmlStr: xmlStr
+      })
+  
+      return 'n/a'
+    }
+  } catch (err) {
+    logger.warn({
+      type: 'rate-fetcher', 'rate-fetcher': 'banxico', 'error-class': 'fetchFromSite', 
+      dateStr: dateStr,
+      statusCode: err.response?.statusCode,
+      message: err.response?.statusMessage || err.message
+    })
+
+    return 'n/a'
+  }
 }

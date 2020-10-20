@@ -4,4 +4,4 @@ RUN apk add python2=2.7.18-r0 make=4.2.1-r2
 ADD  . /opt
 WORKDIR /opt
 RUN npm install
-CMD [ "node", "." ]
+CMD [ "npm", "run", "start" ]

@@ -7,6 +7,7 @@ const URL = process.env.DOF_URL
 
 async function fetchFromSite(dateStr, logger) {
   const formatedDate = moment(dateStr).format('DD/MM/YYYY')
+
   const { body } = await got(URL, { method: 'POST', timeout: parseFloat(process.env.DOF_TIMEOUT || 30) * 1000, form: {
     idioma: 'sp',
     fechaInicial: formatedDate,
@@ -18,14 +19,44 @@ async function fetchFromSite(dateStr, logger) {
 }
 
 module.exports = async (dateStr, logger) => {
-  const htmlStr = await fetchFromSite(dateStr, logger)
-  const $ = cheerio.load(htmlStr)
+  try {
+    const htmlStr = await fetchFromSite(dateStr, logger)
 
-  const rateStr = $('body > table > tbody > tr:nth-child(2) > td:nth-child(1) > table > tbody > tr:nth-child(2) > td:nth-child(4) > table > tbody > tr > td').text().trim()  
+    try {
+      const $ = cheerio.load(htmlStr)
   
-  if (rateStr === '') {
-    throw new Error('rate not available')
-  }
+      const rate = $('body > table > tbody > tr:nth-child(2) > td:nth-child(1) > table > tbody > tr:nth-child(2) > td:nth-child(4) > table > tbody > tr > td').text().trim()  
+      
+      if (rate === '') {
+        logger.error({
+          type: 'rate-fetcher', 'rate-fetcher': 'dof', 'error-class': 'parse', 
+          dateStr: dateStr,
+          message: 'empty string',
+          htmlStr: htmlStr
+        })
+    
+        return 'n/a'
+      }
+    
+      return rate
+    } catch (err) {
+      logger.error({
+        type: 'rate-fetcher', 'rate-fetcher': 'dof', 'error-class': 'parse', 
+        dateStr: dateStr,
+        message: err.message,
+        htmlStr: htmlStr
+      })
+  
+      return 'n/a'
+    }
+  } catch (err) {
+    logger.warn({
+      type: 'rate-fetcher', 'rate-fetcher': 'dof', 'error-class': 'fetchFromSite', 
+      dateStr: dateStr,
+      statusCode: err.response?.statusCode,
+      message: err.response?.statusMessage || err.message
+    })
 
-  return parseFloat(rateStr)
+    return 'n/a'
+  }
 }

@@ -13,8 +13,42 @@ async function fetchFromSite(dateStr, logger) {
 }
 
 module.exports = async (dateStr, logger) => {
-  const jsonStr = await fetchFromSite(dateStr, logger)
-  const fixerRates = JSON.parse(jsonStr)
+  try {
+    const jsonStr = await fetchFromSite(dateStr, logger)
+    try {
+      const fixerRates = JSON.parse(jsonStr)
+      const rate = fixerRates.rates?.MXN
+  
+      if (!rate) {
+        logger.error({
+          type: 'rate-fetcher', 'rate-fetcher': 'fixer', 'error-class': 'parse', 
+          dateStr: dateStr,
+          message: 'empty string',
+          jsonStr: jsonStr
+        })
+    
+        return 'n/a'
+      }
+    
+      return rate
+    } catch (err) {
+      logger.error({
+        type: 'rate-fetcher', 'rate-fetcher': 'fixer', 'error-class': 'parse', 
+        dateStr: dateStr,
+        message: err.message,
+        jsonStr: jsonStr
+      })
+  
+      return 'n/a'
+    }
+  } catch (err) {
+    logger.warn({
+      type: 'rate-fetcher', 'rate-fetcher': 'fixer', 'error-class': 'fetchFromSite', 
+      dateStr: dateStr,
+      statusCode: err.response?.statusCode,
+      message: err.response?.statusMessage || err.message
+    })
 
-  return fixerRates['rates']['MXN']
+    return 'n/a'
+  }
 }
