@@ -1,6 +1,5 @@
 
 const got = require('got')
-const cheerio = require('cheerio')
 const moment = require('moment')
 
 async function fetch(dateStr, logger) {

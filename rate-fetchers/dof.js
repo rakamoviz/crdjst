@@ -6,10 +6,11 @@ const moment = require('moment')
 const URL = process.env.DOF_URL
 
 async function fetch(dateStr, logger) {
+  const formatedDate = moment(dateStr).format('DD/MM/YYYY')
   const { body } = await got(URL, { method: 'POST', timeout: parseFloat(process.env.DOF_TIMEOUT || 30) * 1000, form: {
     idioma: 'sp',
-    fechaInicial: moment(dateStr).format('DD/MM/YYYY'),
-    fechaFinal: moment(dateStr).format('DD/MM/YYYY'),
+    fechaInicial: formatedDate,
+    fechaFinal: formatedDate,
     salida: 'HTML'
   } })
   const $ = cheerio.load(body)
