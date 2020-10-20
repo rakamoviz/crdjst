@@ -2,30 +2,19 @@
 const got = require('got')
 const moment = require('moment')
 
-async function fetch(dateStr, logger) {
+async function fetchFromSite(dateStr, logger) {
   const url = `http://${process.env.FIXER_HOST}/api/${moment(dateStr).format('YYYY-MM-DD')}?access_key=${process.env.FIXER_API_KEY}&base=USD&symbols=MXN`
   const { body } = await got(url, { 
     method: 'GET', 
-    timeout: parseFloat(process.env.FIXER_TIMEOUT || 30) * 1000, 
-    responseType: 'json' 
+    timeout: parseFloat(process.env.FIXER_TIMEOUT || 30) * 1000
   })
 
-  return body['rates']['MXN']
+  return body
 }
 
-module.exports = function initialize(logger) {
-  return {
-    fetch: async (dateStr) => {
-      try {
-        const rate = await fetch(dateStr, logger) 
-        return { rate }
-      } catch(err) {
-        logger.error({err: err})
+module.exports = async (dateStr, logger) => {
+  const jsonStr = await fetchFromSite(dateStr, logger)
+  const fixerRates = JSON.parse(jsonStr)
 
-        return {
-          err: err.message
-        }
-      }
-    }
-  }
+  return fixerRates['rates']['MXN']
 }

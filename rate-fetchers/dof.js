@@ -5,7 +5,7 @@ const moment = require('moment')
 
 const URL = process.env.DOF_URL
 
-async function fetch(dateStr, logger) {
+async function fetchFromSite(dateStr, logger) {
   const formatedDate = moment(dateStr).format('DD/MM/YYYY')
   const { body } = await got(URL, { method: 'POST', timeout: parseFloat(process.env.DOF_TIMEOUT || 30) * 1000, form: {
     idioma: 'sp',
@@ -13,7 +13,13 @@ async function fetch(dateStr, logger) {
     fechaFinal: formatedDate,
     salida: 'HTML'
   } })
-  const $ = cheerio.load(body)
+
+  return body
+}
+
+module.exports = async (dateStr, logger) => {
+  const htmlStr = await fetchFromSite(dateStr, logger)
+  const $ = cheerio.load(htmlStr)
 
   const rateStr = $('body > table > tbody > tr:nth-child(2) > td:nth-child(1) > table > tbody > tr:nth-child(2) > td:nth-child(4) > table > tbody > tr > td').text().trim()  
   
@@ -22,21 +28,4 @@ async function fetch(dateStr, logger) {
   }
 
   return parseFloat(rateStr)
-}
-
-module.exports = function initialize(logger) {
-  return {
-    fetch: async (dateStr) => {
-      try {
-        const rate = await fetch(dateStr, logger) 
-        return { rate }
-      } catch(err) {
-        logger.error({err: err})
-
-        return {
-          err: err.message
-        }
-      }
-    }
-  }
 }
