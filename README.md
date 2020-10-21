@@ -67,3 +67,16 @@ The service is designed to be lenient. Returning 'n/a' for any type of errors in
 The code becomes a bit expanded (for the multiple try-catch block) to provide that convenience to user.
 
 Another thing: extensive logging. I learned from experiences that bad logging / lack of logging hurts so bad in the future. Code reviews should pay attention to that aspect, making sure the correct logging with the correct details on each log.
+
+Finally, aspects like rate-limiting would better be handled externally. Usually we would use API-gateway like Kong / Ambassador / Tyx that offers such features.
+
+### Libraries used
+
+  - express (https://expressjs.com/)
+  - moment (https://momentjs.com/) for date manipulation / processing
+  - got (https://www.npmjs.com/package/got) for making http requests
+  - cheerio (https://www.npmjs.com/package/cheerio) for scrapping html
+  - fast-xml-parser (https://www.npmjs.com/package/fast-xml-parser) for parsing xml
+  - bunyan (https://github.com/trentm/node-bunyan) for logging
+  - express-rate-limiting (https://www.npmjs.com/package/express-rate-limit) for api rate-limiting
+  - jsonwebtoken (https://www.npmjs.com/package/jsonwebtoken) for verifying jwt token
