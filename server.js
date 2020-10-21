@@ -2,7 +2,8 @@ const express = require('express')
 const jwt = require('jsonwebtoken')
 const moment = require('moment')
 require('moment-timezone')
-
+const rateLimit = require('express-rate-limit')
+ 
 function initialize(coreBusiness, logger) {
   const app = express()
   const port = process.env.EXPRESS_PORT
@@ -18,8 +19,19 @@ function initialize(coreBusiness, logger) {
       next()
     })
   }
+
+  // Enable if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
+  // see https://expressjs.com/en/guide/behind-proxies.html
+  app.set('trust proxy', process.env.APP_TRUST_PROXY)
   
+  const limiter = rateLimit({
+    windowMs: parseFloat(process.env.APP_RATELIMIT_WINDOW) * 60 * 1000,
+    max: parseInt(process.env.APP_RATELIMIT_MAX)
+  })
+  
+  app.use(limiter)
   app.use(authenticateToken)
+  
   app.get('/rates', async (req, res) => {
     /**
      * The core-business.obtainRates expects date in ISO8601 format.
